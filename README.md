@@ -2,6 +2,17 @@
 
 StackIt is a modern, feature-rich question-and-answer platform designed for collaborative learning and structured knowledge sharing. Built with React, Node.js, and MongoDB, it provides a clean, user-friendly interface for asking and answering questions within a community.
 
+## Team Information
+
+**Team Name:** VR Voyagers  
+**Team Members:**
+- [Krish Jagyasi](https://github.com/KrishJagyasi) (Team Leader)
+- [Krish Lakhani](https://github.com/Krisshhh)
+- [Ved Suthar](https://github.com/Ved210105)
+- [Darshil Padmani](https://github.com/DarshilPadmani)
+
+**Problem Statement:** PeerQ is a minimal question-and-answer platform that supports collaborative learning and structured knowledge sharing. It's designed to be simple, user-friendly, and focused on the core experience of asking and answering questions within a community.
+
 ## 🚀 Features
 
 ### Core Features
@@ -229,4 +240,4 @@ For support and questions, please open an issue in the repository.
 
 ---
 
-**StackIt** - Empowering communities through collaborative learning and knowledge sharing. 
+**StackIt** - Empowering communities through collaborative learning and knowledge sharing.
