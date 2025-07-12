@@ -2,12 +2,12 @@ const express = require('express');
 const Answer = require('../models/Answer');
 const Question = require('../models/Question');
 const Notification = require('../models/Notification');
-const { auth } = require('../middleware/auth');
+const { auth, userAuth, guestAuth, requirePermission } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Get answers for a question
-router.get('/', async (req, res) => {
+// Get answers for a question (Guest: View only)
+router.get('/', guestAuth, async (req, res) => {
   try {
     const { questionId, author } = req.query;
     let query = {};
@@ -35,8 +35,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Create new answer
-router.post('/', auth, async (req, res) => {
+// Create new answer (User: Post permission required)
+router.post('/', requirePermission('post'), async (req, res) => {
   try {
     const { content, questionId } = req.body;
 
@@ -89,7 +89,7 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// Update answer
+// Update answer (Admin: Moderate permission or owner)
 router.put('/:id', auth, async (req, res) => {
   try {
     const { content } = req.body;
@@ -99,7 +99,8 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(404).json({ message: 'Answer not found' });
     }
 
-    if (answer.author.toString() !== req.user._id.toString()) {
+    // Check if user is admin or owner
+    if (req.user.role !== 'admin' && answer.author.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
@@ -119,7 +120,7 @@ router.put('/:id', auth, async (req, res) => {
   }
 });
 
-// Delete answer
+// Delete answer (Admin: Moderate permission or owner)
 router.delete('/:id', auth, async (req, res) => {
   try {
     const answer = await Answer.findById(req.params.id);
@@ -128,7 +129,8 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(404).json({ message: 'Answer not found' });
     }
 
-    if (answer.author.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    // Check if user is admin or owner
+    if (req.user.role !== 'admin' && answer.author.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
@@ -141,8 +143,8 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
-// Vote on answer
-router.post('/:id/vote', auth, async (req, res) => {
+// Vote on answer (User: Vote permission required)
+router.post('/:id/vote', requirePermission('vote'), async (req, res) => {
   try {
     const { voteType } = req.body; // 'upvote' or 'downvote'
     const answer = await Answer.findById(req.params.id);
@@ -191,7 +193,7 @@ router.post('/:id/vote', auth, async (req, res) => {
   }
 });
 
-// Accept answer
+// Accept answer (Admin: Moderate permission or question owner)
 router.post('/:id/accept', auth, async (req, res) => {
   try {
     const answer = await Answer.findById(req.params.id);
@@ -204,8 +206,9 @@ router.post('/:id/accept', auth, async (req, res) => {
       return res.status(404).json({ message: 'Question not found' });
     }
 
-    if (question.author.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Only the question author can accept answers' });
+    // Check if user is admin or question owner
+    if (req.user.role !== 'admin' && question.author.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Only the question author or admin can accept answers' });
     }
 
     // Unaccept previously accepted answer

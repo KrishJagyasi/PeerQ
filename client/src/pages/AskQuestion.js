@@ -41,7 +41,7 @@ const POPULAR_TAGS = [
 ];
 
 const AskQuestion = () => {
-  const { user } = useAuth();
+  const { user, canPost, isGuest } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: '',
@@ -50,9 +50,40 @@ const AskQuestion = () => {
   });
   const [loading, setLoading] = useState(false);
 
+  // Check if user can post
   if (!user) {
     navigate('/login');
     return null;
+  }
+
+  if (!canPost()) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="card text-center py-12">
+          <h1 className="text-3xl font-bold text-text-primary mb-4">
+            Guest Access Restricted
+          </h1>
+          <p className="text-text-secondary mb-6">
+            Guest users can browse and read content but cannot post questions or answers.
+            Please sign up for a full account to ask questions.
+          </p>
+          <div className="space-x-4">
+            <button
+              onClick={() => navigate('/login')}
+              className="btn btn-primary"
+            >
+              Sign Up to Ask Questions
+            </button>
+            <button
+              onClick={() => navigate('/')}
+              className="btn btn-secondary"
+            >
+              Back to Home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const handleSubmit = async (e) => {
@@ -113,6 +144,13 @@ const AskQuestion = () => {
         <p className="text-text-secondary mt-2">
           Share your knowledge and help others learn
         </p>
+        {user && (
+          <div className="mt-2">
+            <span className="text-sm text-text-muted">
+              Posting as: {user.username} ({user.role})
+            </span>
+          </div>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">

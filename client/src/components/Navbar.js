@@ -2,19 +2,21 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
-import { Bell, Search, User, LogOut, Settings } from 'lucide-react';
+import { Bell, Search, User, LogOut, Settings, Crown, UserCheck, LogIn, UserPlus } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
 const Navbar = () => {
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, canPost, isGuest, isAdmin } = useAuth();
   const { unreadCount, setUnreadCount } = useSocket();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [notifications, setNotifications] = useState([]);
+
+
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -27,6 +29,11 @@ const Navbar = () => {
     logout();
     navigate('/');
     setShowUserMenu(false);
+    toast.success('Successfully logged out');
+  };
+
+  const handleSignOut = () => {
+    handleLogout();
   };
 
   const fetchNotifications = async () => {
@@ -60,6 +67,19 @@ const Navbar = () => {
     setShowNotifications(!showNotifications);
   };
 
+  const getRoleBadge = (role) => {
+    switch (role) {
+      case 'admin':
+        return <span className="badge badge-admin flex items-center gap-1"><Crown size={12} /> Admin</span>;
+      case 'user':
+        return <span className="badge badge-user flex items-center gap-1"><UserCheck size={12} /> User</span>;
+      case 'guest':
+        return <span className="badge badge-guest">Guest</span>;
+      default:
+        return null;
+    }
+  };
+
   return (
     <nav className="bg-white shadow-sm border-b border-surface-border sticky top-0 z-40">
       <div className="container mx-auto px-4">
@@ -91,15 +111,37 @@ const Navbar = () => {
             {/* Theme Toggle */}
             <ThemeToggle size="sm" className="mr-2" />
 
-            {isAuthenticated ? (
+            {isAuthenticated() ? (
               <>
-                {/* Ask Question Button */}
-                <Link
-                  to="/ask"
-                  className="btn btn-primary"
+                {/* Ask Question Button - Only for users who can post */}
+                {canPost() && (
+                  <Link
+                    to="/ask"
+                    className="btn btn-primary"
+                  >
+                    Ask Question
+                  </Link>
+                )}
+
+                {/* Guest Upgrade Button */}
+                {isGuest() && (
+                  <Link
+                    to="/login"
+                    className="btn btn-secondary"
+                  >
+                    Upgrade Account
+                  </Link>
+                )}
+
+                {/* Quick Sign Out Button - Visible on larger screens */}
+                <button
+                  onClick={handleSignOut}
+                  className="hidden md:flex items-center space-x-2 px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Sign Out"
                 >
-                  Ask Question
-                </Link>
+                  <LogOut className="h-4 w-4" />
+                  <span>Sign Out</span>
+                </button>
 
                 {/* Notifications */}
                 <div className="relative">
@@ -166,12 +208,26 @@ const Navbar = () => {
                         </span>
                       )}
                     </div>
+                    {user?.role && (
+                      <div className="hidden sm:block">
+                        {getRoleBadge(user.role)}
+                      </div>
+                    )}
                   </button>
 
                   {/* User Dropdown */}
                   {showUserMenu && (
                     <div className="absolute right-0 mt-2 w-48 bg-surface rounded-lg shadow-lg border border-surface-border z-50">
                       <div className="py-1">
+                        <div className="px-4 py-2 border-b border-surface-border">
+                          <div className="text-sm font-medium text-text-primary">{user?.username}</div>
+                          <div className="text-xs text-text-muted">{user?.email}</div>
+                          {user?.role && (
+                            <div className="mt-1">
+                              {getRoleBadge(user.role)}
+                            </div>
+                          )}
+                        </div>
                         <Link
                           to="/profile"
                           className="flex items-center px-4 py-2 text-sm text-text-primary hover:bg-background-secondary transition-colors"
@@ -180,9 +236,19 @@ const Navbar = () => {
                           <User className="h-4 w-4 mr-2" />
                           Profile
                         </Link>
+                        {isAdmin() && (
+                          <Link
+                            to="/admin"
+                            className="flex items-center px-4 py-2 text-sm text-text-primary hover:bg-background-secondary transition-colors"
+                            onClick={() => setShowUserMenu(false)}
+                          >
+                            <Settings className="h-4 w-4 mr-2" />
+                            Admin Panel
+                          </Link>
+                        )}
                         <button
                           onClick={handleLogout}
-                          className="flex items-center w-full px-4 py-2 text-sm text-text-primary hover:bg-background-secondary transition-colors"
+                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                         >
                           <LogOut className="h-4 w-4 mr-2" />
                           Logout
@@ -193,12 +259,44 @@ const Navbar = () => {
                 </div>
               </>
             ) : (
-              <div className="flex items-center space-x-4">
-                <Link to="/login" className="btn btn-outline">
-                  Login
+              <div className="flex items-center space-x-3">
+                {/* Login Button */}
+                <Link 
+                  to="/login" 
+                  className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-blue hover:text-blue hover:bg-primary-light rounded-lg transition-colors border border-blue-500"
+                >
+                  <LogIn className="h-4 w-4" />
+                  <span>Login</span>
                 </Link>
-                <Link to="/register" className="btn btn-primary">
-                  Register
+                
+                {/* Signup Button */}
+                <Link 
+                  to="/register" 
+                  className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary rounded-lg transition-colors shadow-sm"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  <span>Signup</span>
+                </Link>
+              </div>
+            )}
+
+            {/* Always show login/signup for guests */}
+            {isAuthenticated() && isGuest() && (
+              <div className="flex items-center space-x-3 ml-4">
+                <Link 
+                  to="/login" 
+                  className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-blue hover:text-blue hover:bg-primary-light rounded-lg transition-colors border border-blue-500"
+                >
+                  <LogIn className="h-4 w-4" />
+                  <span>Login</span>
+                </Link>
+                
+                <Link 
+                  to="/register" 
+                  className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-white bg-primary hover:bg-primary rounded-lg transition-colors shadow-sm"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  <span>Signup</span>
                 </Link>
               </div>
             )}

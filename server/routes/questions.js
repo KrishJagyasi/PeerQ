@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Question = require('../models/Question');
-const { auth } = require('../middleware/auth');
+const { auth, userAuth, adminAuth, guestAuth, adminOrOwner, requirePermission } = require('../middleware/auth');
 
-// Get all questions with pagination and search
-router.get('/', async (req, res) => {
+// Get all questions with pagination and search (Guest: View only)
+router.get('/', guestAuth, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -72,8 +72,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get popular tags
-router.get('/tags/popular', async (req, res) => {
+// Get popular tags (Guest: View only)
+router.get('/tags/popular', guestAuth, async (req, res) => {
   try {
     const tags = await Question.aggregate([
       { $unwind: '$tags' },
@@ -89,8 +89,8 @@ router.get('/tags/popular', async (req, res) => {
   }
 });
 
-// Search tags
-router.get('/tags/search', async (req, res) => {
+// Search tags (Guest: View only)
+router.get('/tags/search', guestAuth, async (req, res) => {
   try {
     const query = req.query.q || '';
     
@@ -114,8 +114,8 @@ router.get('/tags/search', async (req, res) => {
   }
 });
 
-// Get single question
-router.get('/:id', async (req, res) => {
+// Get single question (Guest: View only)
+router.get('/:id', guestAuth, async (req, res) => {
   try {
     const question = await Question.findById(req.params.id)
       .populate('author', 'username avatar')
@@ -135,8 +135,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Create question
-router.post('/', auth, async (req, res) => {
+// Create question (User: Post permission required)
+router.post('/', requirePermission('post'), async (req, res) => {
   try {
     const { title, description, tags } = req.body;
 
@@ -161,8 +161,8 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// Vote on question
-router.post('/:id/vote', auth, async (req, res) => {
+// Vote on question (User: Vote permission required)
+router.post('/:id/vote', requirePermission('vote'), async (req, res) => {
   try {
     const { voteType } = req.body;
     const question = await Question.findById(req.params.id);
@@ -221,7 +221,7 @@ router.post('/:id/vote', auth, async (req, res) => {
   }
 });
 
-// Update question
+// Update question (Admin: Moderate permission or owner)
 router.put('/:id', auth, async (req, res) => {
   try {
     const question = await Question.findById(req.params.id);
@@ -230,7 +230,8 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(404).json({ message: 'Question not found' });
     }
 
-    if (question.author.toString() !== req.user.id) {
+    // Check if user is admin or owner
+    if (req.user.role !== 'admin' && question.author.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
@@ -249,7 +250,7 @@ router.put('/:id', auth, async (req, res) => {
   }
 });
 
-// Delete question
+// Delete question (Admin: Moderate permission or owner)
 router.delete('/:id', auth, async (req, res) => {
   try {
     const question = await Question.findById(req.params.id);
@@ -258,7 +259,8 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(404).json({ message: 'Question not found' });
     }
 
-    if (question.author.toString() !== req.user.id) {
+    // Check if user is admin or owner
+    if (req.user.role !== 'admin' && question.author.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
@@ -267,6 +269,20 @@ router.delete('/:id', auth, async (req, res) => {
   } catch (error) {
     console.error('Error deleting question:', error);
     res.status(500).json({ message: 'Failed to delete question' });
+  }
+});
+
+// Admin routes for question management (Admin: Moderate permission required)
+router.get('/admin/all', requirePermission('moderate'), async (req, res) => {
+  try {
+    const questions = await Question.find({})
+      .populate('author', 'username avatar')
+      .sort({ createdAt: -1 });
+    
+    res.json({ questions });
+  } catch (error) {
+    console.error('Error fetching all questions:', error);
+    res.status(500).json({ message: 'Failed to fetch questions' });
   }
 });
 

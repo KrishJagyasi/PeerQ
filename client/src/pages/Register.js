@@ -10,7 +10,8 @@ const Register = () => {
     username: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    role: 'user'
   });
   const [loading, setLoading] = useState(false);
 
@@ -29,7 +30,7 @@ const Register = () => {
 
     setLoading(true);
 
-    const success = await register(formData.username, formData.email, formData.password);
+    const success = await register(formData.username, formData.email, formData.password, formData.role);
     if (success) {
       navigate('/');
     }
@@ -119,6 +120,26 @@ const Register = () => {
               placeholder="Confirm your password"
               required
             />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="role" className="form-label">
+              Account Type
+            </label>
+            <select
+              id="role"
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              className="form-input"
+              required
+            >
+              <option value="user">User Account</option>
+              <option value="guest">Guest Account</option>
+            </select>
+            <p className="text-xs text-text-muted mt-1">
+              User accounts can post questions and answers. Guest accounts can only view content.
+            </p>
           </div>
 
           <button
