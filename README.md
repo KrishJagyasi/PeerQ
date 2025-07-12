@@ -3,7 +3,7 @@ Team Members:
 - [Krish Jagyasi](https://github.com/KrishJagyasi)
 - [Krish Lakhani](https://github.com/Ved210105)
 - [Ved Suthar](https://github.com/Krisshhh)
-- [Darshil Padmani]
+- Darshil Padmani
 
 Problem Statement: PeerQ is a minimal question-and-answer platform that supports collaborative
 learning and structured knowledge sharing. It’s designed to be simple, user- friendly,
