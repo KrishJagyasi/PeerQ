@@ -1,10 +1,10 @@
 @echo off
 echo ========================================
-echo StackIt - PeerQ Deployment Script
+echo PeerQ - StackIt Deployment Script (Fixed)
 echo ========================================
 echo.
 
-echo [1/6] Checking if Git is installed...
+echo [1/7] Checking if Git is installed...
 git --version >nul 2>&1
 if %errorlevel% neq 0 (
     echo ERROR: Git is not installed or not in PATH
@@ -15,7 +15,7 @@ if %errorlevel% neq 0 (
 echo ✓ Git is installed
 
 echo.
-echo [2/6] Initializing Git repository...
+echo [2/7] Initializing Git repository...
 if not exist .git (
     git init
     echo ✓ Git repository initialized
@@ -24,24 +24,28 @@ if not exist .git (
 )
 
 echo.
-echo [3/6] Adding remote repository...
+echo [3/7] Adding remote repository...
 git remote remove origin 2>nul
 git remote add origin https://github.com/KrishJagyasi/PeerQ.git
 echo ✓ Remote repository added
 
 echo.
-echo [4/6] Adding all files to Git...
+echo [4/7] Adding all files to Git...
 git add .
 echo ✓ Files added to staging
 
 echo.
-echo [5/6] Committing changes...
+echo [5/7] Committing changes...
 git commit -m "Initial commit: StackIt Q&A Platform - Complete implementation with all features"
 echo ✓ Changes committed
 
 echo.
-echo [6/6] Pushing to GitHub...
+echo [6/7] Setting up main branch...
 git branch -M main
+echo ✓ Main branch created/renamed
+
+echo.
+echo [7/7] Pushing to GitHub...
 git push -u origin main
 if %errorlevel% equ 0 (
     echo ✓ Successfully pushed to GitHub!
@@ -58,7 +62,15 @@ if %errorlevel% equ 0 (
     echo.
 ) else (
     echo ERROR: Failed to push to GitHub
-    echo Please check your GitHub credentials and permissions
+    echo.
+    echo Troubleshooting steps:
+    echo 1. Check if you have access to the repository
+    echo 2. Verify your GitHub credentials
+    echo 3. Try: git config --global user.name "Your Name"
+    echo 4. Try: git config --global user.email "your.email@example.com"
+    echo.
+    echo Manual push command:
+    echo git push -u origin main
 )
 
 echo.
