@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import RichTextEditor from '../components/RichTextEditor';
@@ -11,8 +11,7 @@ import {
   User, 
   CheckCircle,
   Edit,
-  Trash2,
-  Flag
+  Trash2
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -30,9 +29,9 @@ const QuestionDetail = () => {
 
   useEffect(() => {
     fetchQuestion();
-  }, [id]);
+  }, [id, fetchQuestion]);
 
-  const fetchQuestion = async () => {
+  const fetchQuestion = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get(`/api/questions/${id}`);
@@ -44,7 +43,7 @@ const QuestionDetail = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   const handleVote = async (type, itemId, itemType = 'question') => {
     if (!user) {
@@ -83,7 +82,7 @@ const QuestionDetail = () => {
     }
 
     try {
-      const response = await axios.post(`/api/answers/${answerId}/accept`);
+      await axios.post(`/api/answers/${answerId}/accept`);
       setAnswers(prev => 
         (prev || []).map(answer => ({
           ...answer,

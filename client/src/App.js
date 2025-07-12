@@ -15,6 +15,7 @@ import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 import Notifications from './pages/Notifications';
 import './App.css';
+import './styles/pages/index.css';
 
 function App() {
   return (

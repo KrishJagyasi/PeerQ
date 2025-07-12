@@ -1,0 +1,13 @@
+/* ========================================
+   PAGE STYLES INDEX
+   ======================================== */
+
+/* Import all page-specific styles */
+@import './Home.css';
+@import './Login.css';
+@import './Register.css';
+@import './Profile.css';
+@import './AskQuestion.css';
+@import './QuestionDetail.css';
+@import './Admin.css';
+@import './Notifications.css'; 

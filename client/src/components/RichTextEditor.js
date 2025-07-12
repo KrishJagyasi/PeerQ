@@ -152,8 +152,6 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Write your content her
   const insertMention = (username) => {
     const mentionHtml = `<a href="/profile/${username}" class="mention">@${username}</a>`;
     execCommand('insertHTML', mentionHtml);
-<<<<<<< HEAD
-=======
     setShowMentionSuggestions(false);
     setMentionQuery('');
   };
@@ -171,7 +169,6 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Write your content her
     } else {
       setShowMentionSuggestions(false);
     }
->>>>>>> ea78d8c17855c0cc72f3d66d088db8dc00a71d99
   };
 
   const handleImageUpload = async (e) => {

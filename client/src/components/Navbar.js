@@ -5,12 +5,11 @@ import { useSocket } from '../contexts/SocketContext';
 import { Bell, Search, User, LogOut, Settings, Crown, UserCheck, LogIn, UserPlus } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import NotificationList from './NotificationList';
-import axios from 'axios';
 import toast from 'react-hot-toast';
 
 const Navbar = () => {
   const { user, logout, isAuthenticated, canPost, isGuest, isAdmin } = useAuth();
-  const { unreadCount, setUnreadCount } = useSocket();
+  const { unreadCount } = useSocket();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
