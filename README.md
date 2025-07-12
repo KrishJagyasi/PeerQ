@@ -1,6 +1,6 @@
-Team Name: VR Voyagers
+Team Name: VR Voyagers\
 Team Members: 
-- [Krish Jagyasi](https://github.com/KrishJagyasi)
+- [Krish Jagyasi](https://github.com/KrishJagyasi) (Team Leader)
 - [Krish Lakhani](https://github.com/Ved210105)
 - [Ved Suthar](https://github.com/Krisshhh)
 - Darshil Padmani
