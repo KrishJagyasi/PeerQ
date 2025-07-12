@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
@@ -15,6 +15,10 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  
+  // Refs for click outside detection
+  const notificationRef = useRef(null);
+  const userMenuRef = useRef(null);
 
 
 
@@ -38,7 +42,30 @@ const Navbar = () => {
 
   const handleNotificationClick = () => {
     setShowNotifications(!showNotifications);
+    setShowUserMenu(false); // Close user menu when opening notifications
   };
+  
+  const handleUserMenuClick = () => {
+    setShowUserMenu(!showUserMenu);
+    setShowNotifications(false); // Close notifications when opening user menu
+  };
+  
+  // Handle click outside to close dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setShowUserMenu(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const getRoleBadge = (role) => {
     switch (role) {
@@ -115,10 +142,11 @@ const Navbar = () => {
             </button>
 
             {/* Notifications */}
-            <div className="relative">
+            <div className="relative" ref={notificationRef}>
               <button
                 onClick={handleNotificationClick}
                 className="relative p-2 text-text-secondary hover:text-text-primary hover:bg-background-secondary rounded-lg transition-colors"
+                aria-label="Notifications"
               >
                 <Bell className="h-6 w-6" />
                 {unreadCount > 0 && (
@@ -128,9 +156,9 @@ const Navbar = () => {
                 )}
               </button>
 
-              {/* Notifications Dropdown */}
+{/* Notifications Dropdown */}
               {showNotifications && (
-                <div className="navbar-dropdown" style={{right: 0}}>
+                <div className="navbar-dropdown" style={{right: 0, transition: 'transform 0.2s, opacity 0.2s', transform: showNotifications ? 'scale(1)' : 'scale(0.95)', opacity: showNotifications ? 1 : 0 }}>
                   <NotificationList 
                     showUnreadOnly={false}
                     className=""
@@ -141,10 +169,11 @@ const Navbar = () => {
             </div>
 
             {/* User Menu */}
-            <div className="relative">
+            <div className="relative" ref={userMenuRef}>
               <button
-                onClick={() => setShowUserMenu(!showUserMenu)}
+                onClick={handleUserMenuClick}
                 className="flex items-center space-x-2 p-2 text-text-secondary hover:text-text-primary hover:bg-background-secondary rounded-lg transition-colors"
+                aria-label="User menu"
               >
                 <div className="w-8 h-8 bg-background-secondary rounded-full flex items-center justify-center">
                   {user?.avatar ? (
@@ -217,10 +246,10 @@ const Navbar = () => {
           </>
         ) : (
           <div className="flex items-center space-x-3">
-            {/* Login Button */}
+{/* Login Button */}
             <Link 
               to="/login" 
-              className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-blue hover:text-blue hover:bg-primary-light rounded-lg transition-colors border border-blue-500"
+              className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-purple-600 hover:text-purple-800 hover:bg-primary-light rounded-md transition-colors border border-purple-500 shadow-sm"
             >
               <LogIn className="h-4 w-4" />
               <span>Login</span>
