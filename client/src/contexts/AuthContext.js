@@ -69,12 +69,13 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (username, email, password) => {
+  const register = async (username, email, password, role = 'user') => {
     try {
       const response = await axios.post('/api/auth/register', { 
         username, 
         email, 
-        password 
+        password,
+        role
       });
       const { token, user } = response.data;
       
@@ -93,6 +94,56 @@ export const AuthProvider = ({ children }) => {
       return true;
     } catch (error) {
       const message = error.response?.data?.message || 'Registration failed';
+      toast.error(message);
+      return false;
+    }
+  };
+
+  const registerGuest = async (username) => {
+    try {
+      const response = await axios.post('/api/auth/register/guest', { username });
+      const { token, user } = response.data;
+      
+      // Normalize user data structure
+      const userData = {
+        ...user,
+        id: user.id || user._id,
+        _id: user._id || user.id
+      };
+      
+      localStorage.setItem('token', token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      setUser(userData);
+      
+      toast.success('Guest account created successfully!');
+      return true;
+    } catch (error) {
+      const message = error.response?.data?.message || 'Guest registration failed';
+      toast.error(message);
+      return false;
+    }
+  };
+
+  const upgradeGuest = async (email, password) => {
+    try {
+      const response = await axios.post('/api/auth/upgrade-guest', { email, password });
+      const { token, user } = response.data;
+      
+      // Normalize user data structure
+      const userData = {
+        ...user,
+        id: user.id || user._id,
+        _id: user._id || user.id
+      };
+      
+      localStorage.setItem('token', token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      setUser(userData);
+      
+      toast.success('Account upgraded successfully!');
+      return true;
+    } catch (error) {
+      const message = error.response?.data?.message || 'Account upgrade failed';
       toast.error(message);
       return false;
     }
@@ -124,14 +175,74 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Admin functions
+  const getAllUsers = async () => {
+    try {
+      const response = await axios.get('/api/auth/users');
+      return response.data.users;
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to fetch users';
+      toast.error(message);
+      return [];
+    }
+  };
+
+  const updateUserRole = async (userId, role) => {
+    try {
+      const response = await axios.put(`/api/auth/users/${userId}/role`, { role });
+      toast.success('User role updated successfully');
+      return response.data.user;
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to update user role';
+      toast.error(message);
+      return null;
+    }
+  };
+
+  const deleteUser = async (userId) => {
+    try {
+      await axios.delete(`/api/auth/users/${userId}`);
+      toast.success('User deleted successfully');
+      return true;
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to delete user';
+      toast.error(message);
+      return false;
+    }
+  };
+
+  // Permission-based helper functions
+  const isGuest = () => user?.role === 'guest';
+  const isUser = () => user?.role === 'user';
+  const isAdmin = () => user?.role === 'admin';
+  const isAuthenticated = () => !!user;
+  
+  // Permission checks based on role
+  const canView = () => true; // All roles can view
+  const canPost = () => isAuthenticated() && !isGuest(); // Users and admins can post
+  const canVote = () => isAuthenticated() && !isGuest(); // Users and admins can vote
+  const canModerate = () => isAdmin(); // Only admins can moderate
+
   const value = {
     user,
     loading,
     login,
     register,
+    registerGuest,
+    upgradeGuest,
     logout,
     updateProfile,
-    isAuthenticated: !!user
+    getAllUsers,
+    updateUserRole,
+    deleteUser,
+    isAuthenticated,
+    isGuest,
+    isUser,
+    isAdmin,
+    canView,
+    canPost,
+    canVote,
+    canModerate
   };
 
   return (

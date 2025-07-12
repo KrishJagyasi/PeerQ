@@ -777,6 +777,25 @@ a:hover {
   color: var(--color-danger);
 }
 
+/* Role-based badges */
+.badge-admin {
+  background-color: #8b5cf6;
+  color: white;
+  font-weight: var(--font-weight-medium);
+}
+
+.badge-user {
+  background-color: var(--color-success);
+  color: white;
+  font-weight: var(--font-weight-medium);
+}
+
+.badge-guest {
+  background-color: var(--color-secondary);
+  color: white;
+  font-weight: var(--font-weight-medium);
+}
+
 /* Vote Styles */
 .vote-container {
   display: flex;
