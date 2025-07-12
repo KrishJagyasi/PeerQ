@@ -1,5 +1,5 @@
 # PeerQ
-**PeerQ** is a minimal and community-driven Q&A platform built for collaborative learning and structured knowledge sharing. Inspired by simplicity and focus, PeerQ helps users ask meaningful questions, get clear answers, and grow together.
+**PeerQ** is a community-driven Q&A platform built for collaborative learning and structured knowledge sharing. Inspired by simplicity and focus, PeerQ helps users ask meaningful questions, get clear answers, and grow together.
 
 ---
 
