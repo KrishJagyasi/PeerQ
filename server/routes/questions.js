@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Question = require('../models/Question');
+const Answer = require('../models/Answer');
 const { auth, userAuth, adminAuth, guestAuth, adminOrOwner, requirePermission } = require('../middleware/auth');
 
 // Get all questions with pagination and search (Guest: View only)
@@ -285,5 +286,114 @@ router.get('/admin/all', requirePermission('moderate'), async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch questions' });
   }
 });
+
+// Comprehensive search endpoint (Guest: View only)
+router.get('/search/comprehensive', guestAuth, async (req, res) => {
+  try {
+    const query = req.query.q || '';
+    const limit = parseInt(req.query.limit) || 10;
+    
+    if (query.length < 2) {
+      return res.json({ 
+        questions: [], 
+        answers: [], 
+        recommendations: [],
+        totalResults: 0 
+      });
+    }
+
+    // Search in questions
+    const questionQuery = {
+      $or: [
+        { title: { $regex: query, $options: 'i' } },
+        { description: { $regex: query, $options: 'i' } },
+        { tags: { $regex: query, $options: 'i' } }
+      ]
+    };
+
+    // Search in answers
+    const answerQuery = {
+      content: { $regex: query, $options: 'i' }
+    };
+
+    // Execute searches in parallel
+    const [questions, answers] = await Promise.all([
+      Question.find(questionQuery)
+        .populate('author', 'username avatar')
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .lean(),
+      Answer.find(answerQuery)
+        .populate('author', 'username avatar')
+        .populate('question', 'title')
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .lean()
+    ]);
+
+    // Generate recommendations based on search query
+    const recommendations = await generateSearchRecommendations(query);
+
+    // Calculate total results
+    const totalResults = questions.length + answers.length;
+
+    res.json({
+      questions,
+      answers,
+      recommendations,
+      totalResults,
+      query
+    });
+  } catch (error) {
+    console.error('Error in comprehensive search:', error);
+    res.status(500).json({ message: 'Failed to perform search' });
+  }
+});
+
+// Generate search recommendations
+async function generateSearchRecommendations(query) {
+  try {
+    // Get popular tags that match the query
+    const matchingTags = await Question.aggregate([
+      { $unwind: '$tags' },
+      { $match: { tags: { $regex: query, $options: 'i' } } },
+      { $group: { _id: '$tags', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 }
+    ]);
+
+    // Get recent questions with similar tags
+    const recentQuestions = await Question.find({
+      tags: { $in: matchingTags.map(tag => tag._id) }
+    })
+    .populate('author', 'username avatar')
+    .sort({ createdAt: -1 })
+    .limit(3)
+    .lean();
+
+    // Get trending questions (most viewed in last 7 days)
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const trendingQuestions = await Question.find({
+      createdAt: { $gte: sevenDaysAgo }
+    })
+    .populate('author', 'username avatar')
+    .sort({ views: -1 })
+    .limit(3)
+    .lean();
+
+    return {
+      matchingTags: matchingTags.map(tag => ({ name: tag._id, count: tag.count })),
+      recentQuestions,
+      trendingQuestions
+    };
+  } catch (error) {
+    console.error('Error generating recommendations:', error);
+    return {
+      matchingTags: [],
+      recentQuestions: [],
+      trendingQuestions: []
+    };
+  }
+}
 
 module.exports = router; 

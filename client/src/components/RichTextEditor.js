@@ -228,11 +228,11 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Write your content her
   return (
     <div className="rich-text-editor bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md">
       {/* Professional Toolbar */}
-      <div className="toolbar bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-1">
+      <div className="toolbar bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-4 py-2 sm:py-3">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center space-x-1 flex-wrap">
             {/* Text Formatting Group */}
-            <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-1 mr-3">
+            <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-1 mb-1 sm:mb-0 sm:mr-3">
               <ToolbarButton
                 icon={Bold}
                 onClick={() => execCommand('bold')}
@@ -260,7 +260,7 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Write your content her
             </div>
 
             {/* Lists Group */}
-            <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-1 mr-3">
+            <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-1 mb-1 sm:mb-0 sm:mr-3">
               <ToolbarButton
                 icon={List}
                 onClick={() => execCommand('insertUnorderedList')}
@@ -275,8 +275,8 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Write your content her
               />
             </div>
 
-            {/* Alignment Group */}
-            <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-1 mr-3">
+            {/* Alignment Group - Hidden on very small screens */}
+            <div className="hidden sm:flex items-center bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-1 mr-3">
               <ToolbarButton
                 icon={AlignLeft}
                 onClick={() => execCommand('justifyLeft')}
@@ -298,7 +298,7 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Write your content her
             </div>
 
             {/* Media Group */}
-            <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-1 mr-3">
+            <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-1 mb-1 sm:mb-0 sm:mr-3">
               <ToolbarButton
                 icon={Link}
                 onClick={() => setShowLinkDialog(true)}
@@ -323,16 +323,16 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Write your content her
                 className="hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
               />
               {showEmojiPicker && (
-                <div className="absolute top-full left-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-xl z-50 p-4 max-w-80 max-h-64 overflow-y-auto">
+                <div className="absolute top-full left-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-xl z-50 p-4 w-80 max-w-[90vw] max-h-64 overflow-y-auto">
                   <div className="mb-3">
                     <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Choose an emoji</h3>
                   </div>
-                  <div className="grid grid-cols-8 gap-2">
+                  <div className="grid grid-cols-6 sm:grid-cols-8 gap-2">
                     {emojis.map((emoji, index) => (
                       <button
                         key={index}
                         onClick={() => insertEmoji(emoji)}
-                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-lg transition-colors duration-150"
+                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-lg transition-colors duration-150 min-h-[44px]"
                         title={emoji}
                       >
                         {emoji}
@@ -344,8 +344,8 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Write your content her
             </div>
           </div>
 
-          {/* Character Count */}
-          <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+          {/* Character Count - Hidden on very small screens */}
+          <div className="hidden sm:block text-xs text-gray-500 dark:text-gray-400 font-medium">
             {value.replace(/<[^>]*>/g, '').length} characters
           </div>
         </div>
@@ -356,7 +356,7 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Write your content her
         <div
           ref={editorRef}
           contentEditable
-          className="min-h-[300px] p-6 focus:outline-none text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900 leading-relaxed"
+          className="min-h-[200px] sm:min-h-[300px] p-3 sm:p-6 focus:outline-none text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900 leading-relaxed"
           dir="ltr"
           spellCheck={true}
           autoCorrect="on"
@@ -371,11 +371,11 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Write your content her
           data-placeholder={placeholder}
         />
         
-        {/* Writing Guidelines */}
-        <div className="absolute bottom-4 right-4 text-xs text-gray-400 dark:text-gray-500">
-          <div className="flex items-center space-x-4">
-            <span>💡 Tip: Use Ctrl+B for bold, Ctrl+I for italic</span>
-            <span>📝 Write clearly and be specific</span>
+        {/* Writing Guidelines - Responsive */}
+        <div className="absolute bottom-2 sm:bottom-4 right-2 sm:right-4 text-xs text-gray-400 dark:text-gray-500">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-1 sm:space-y-0 sm:space-x-4">
+            <span className="hidden sm:inline">💡 Tip: Use Ctrl+B for bold, Ctrl+I for italic</span>
+            <span className="text-xs">📝 Write clearly and be specific</span>
           </div>
         </div>
       </div>

@@ -204,38 +204,52 @@ const Chatbot = () => {
       {/* Floating Chat Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-[9999] w-16 h-16 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 flex items-center justify-center group"
+        className="fixed top-1/2 right-8 -translate-y-1/2 z-[9999] w-20 h-20 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 hover:from-blue-600 hover:via-blue-700 hover:to-indigo-800 text-white rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 flex items-center justify-center group border-4 border-white dark:border-gray-800"
         title="Chat with AI Assistant"
+        style={{
+          boxShadow: '0 20px 40px -10px rgba(59, 130, 246, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+        }}
       >
         {isOpen ? (
-          <X size={28} className="transition-transform duration-300" />
+          <X size={32} className="transition-transform duration-300 drop-shadow-md" />
         ) : (
-          <MessageCircle size={28} className="transition-transform duration-300" />
+          <MessageCircle size={32} className="transition-transform duration-300 drop-shadow-md" />
         )}
         
         {/* AI Badge */}
-        <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
-          <span className="text-xs font-bold text-white">AI</span>
+        <div className="absolute -top-2 -right-2 w-7 h-7 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg border-2 border-white dark:border-gray-800 animate-bounce">
+          <span className="text-xs font-bold text-white drop-shadow-sm">AI</span>
         </div>
 
         {/* Pulse animation when closed */}
         {!isOpen && (
-          <div className="absolute inset-0 bg-blue-400 rounded-full animate-ping opacity-20"></div>
+          <>
+            <div className="absolute inset-0 bg-blue-400 rounded-full animate-ping opacity-20"></div>
+            <div className="absolute inset-0 bg-blue-300 rounded-full animate-pulse opacity-10"></div>
+          </>
         )}
+        
+        {/* Glow effect */}
+        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 opacity-75 blur-xl scale-75 group-hover:scale-90 transition-transform duration-300"></div>
       </button>
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-[9998] w-96 h-[500px] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 transform scale-100">
+        <div 
+          className="fixed top-1/2 right-32 -translate-y-1/2 z-[9998] w-[420px] h-[600px] bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 transform scale-100 backdrop-blur-sm"
+          style={{
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+          }}
+        >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700 rounded-t-2xl">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center">
-                <Bot size={20} className="text-white" />
+          <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800 rounded-t-3xl backdrop-blur-sm">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 rounded-full flex items-center justify-center shadow-lg border-2 border-white dark:border-gray-700">
+                <Bot size={24} className="text-white drop-shadow-sm" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100">AI Assistant</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Powered by Gemini</p>
+                <h3 className="font-bold text-gray-900 dark:text-gray-100 text-lg">AI Assistant</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Powered by Gemini ✨</p>
               </div>
             </div>
             <div className="flex items-center space-x-2">

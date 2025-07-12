@@ -27,10 +27,6 @@ const QuestionDetail = () => {
   const [answerContent, setAnswerContent] = useState('');
   const [submittingAnswer, setSubmittingAnswer] = useState(false);
 
-  useEffect(() => {
-    fetchQuestion();
-  }, [id, fetchQuestion]);
-
   const fetchQuestion = useCallback(async () => {
     try {
       setLoading(true);
@@ -44,6 +40,10 @@ const QuestionDetail = () => {
       setLoading(false);
     }
   }, [id]);
+
+  useEffect(() => {
+    fetchQuestion();
+  }, [fetchQuestion]);
 
   const handleVote = async (type, itemId, itemType = 'question') => {
     if (!user) {
