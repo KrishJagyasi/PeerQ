@@ -67,6 +67,11 @@ router.post('/:chatId/messages', auth, async (req, res) => {
       return res.status(400).json({ message: 'Message is required' });
     }
     
+    // Validate chatId
+    if (!req.params.chatId || req.params.chatId === 'null' || req.params.chatId === 'undefined') {
+      return res.status(400).json({ message: 'Invalid chat ID' });
+    }
+    
     // Find the chat
     const chat = await Chat.findOne({ 
       _id: req.params.chatId, 

@@ -140,16 +140,18 @@ const Chatbot = () => {
       }
 
       // Create new chat if none exists
-      if (!currentChatId) {
+      let chatId = currentChatId;
+      if (!chatId) {
         const chatResponse = await axios.post('/api/chat', 
           { title: 'New Chat' },
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        setCurrentChatId(chatResponse.data._id);
+        chatId = chatResponse.data._id;
+        setCurrentChatId(chatId);
       }
 
       // Send message to backend
-      const response = await axios.post(`/api/chat/${currentChatId}/messages`, 
+      const response = await axios.post(`/api/chat/${chatId}/messages`, 
         { message: userMessage },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -204,7 +206,7 @@ const Chatbot = () => {
       {/* Floating Chat Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-1/2 right-8 -translate-y-1/2 z-[9999] w-20 h-20 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 hover:from-blue-600 hover:via-blue-700 hover:to-indigo-800 text-white rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 flex items-center justify-center group border-4 border-white dark:border-gray-800"
+        className="fixed top-1/2 right-8 -translate-y-1/2 z-[99999] w-20 h-20 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 hover:from-blue-600 hover:via-blue-700 hover:to-indigo-800 text-white rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 flex items-center justify-center group border-4 border-white dark:border-gray-800"
         title="Chat with AI Assistant"
         style={{
           boxShadow: '0 20px 40px -10px rgba(59, 130, 246, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
@@ -236,7 +238,7 @@ const Chatbot = () => {
       {/* Chat Window */}
       {isOpen && (
         <div 
-          className="fixed top-1/2 right-32 -translate-y-1/2 z-[9998] w-[420px] h-[600px] bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 transform scale-100 backdrop-blur-sm"
+          className="fixed top-1/2 right-32 -translate-y-1/2 z-[99998] w-[420px] h-[600px] bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 transform scale-100 backdrop-blur-sm"
           style={{
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
           }}

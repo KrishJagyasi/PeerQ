@@ -30,9 +30,13 @@ const QuestionDetail = () => {
   const fetchQuestion = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/questions/${id}`);
-      setQuestion(response.data.question);
-      setAnswers(response.data.answers);
+      const [questionResponse, answersResponse] = await Promise.all([
+        axios.get(`/api/questions/${id}`),
+        axios.get(`/api/answers?questionId=${id}`)
+      ]);
+      
+      setQuestion(questionResponse.data.question);
+      setAnswers(answersResponse.data.answers);
     } catch (error) {
       console.error('Failed to fetch question:', error);
       toast.error('Failed to load question');

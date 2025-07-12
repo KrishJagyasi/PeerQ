@@ -14,6 +14,7 @@ const Home = () => {
   const [sortBy, setSortBy] = useState('newest');
   const [selectedTag, setSelectedTag] = useState('');
   const [popularTags, setPopularTags] = useState([]);
+  const [answersMap, setAnswersMap] = useState({}); // questionId -> [answers]
 
   const search = searchParams.get('search') || '';
   const page = parseInt(searchParams.get('page')) || 1;
@@ -22,6 +23,15 @@ const Home = () => {
     fetchQuestions();
     fetchPopularTags();
   }, [search, page, sortBy, selectedTag]);
+
+  useEffect(() => {
+    if (questions.length > 0) {
+      fetchAnswersForQuestions(questions);
+    } else {
+      setAnswersMap({});
+    }
+    // eslint-disable-next-line
+  }, [questions]);
 
   const fetchQuestions = async () => {
     try {
@@ -50,6 +60,23 @@ const Home = () => {
       setPopularTags(response.data.tags);
     } catch (error) {
       console.error('Failed to fetch popular tags:', error);
+    }
+  };
+
+  // Fetch answers for all questions in parallel
+  const fetchAnswersForQuestions = async (questions) => {
+    try {
+      const promises = questions.map(q =>
+        axios.get(`/api/answers?questionId=${q._id}`)
+      );
+      const results = await Promise.all(promises);
+      const map = {};
+      questions.forEach((q, i) => {
+        map[q._id] = results[i].data.answers;
+      });
+      setAnswersMap(map);
+    } catch (error) {
+      console.error('Failed to fetch answers for questions:', error);
     }
   };
 
@@ -153,7 +180,7 @@ const Home = () => {
           </div>
         ) : (
           questions.map((question) => (
-            <div key={question._id} className="card flex items-center justify-between p-4">
+            <div key={question._id} className="card flex items-center justify-between p-4 mb-4">
               <div className="flex-1 min-w-0">
                 <Link
                   to={`/question/${question._id}`}
@@ -164,6 +191,23 @@ const Home = () => {
                 <div className="mt-2 text-text-secondary text-sm truncate">
                   {question.description.replace(/<[^>]*>/g, '').substring(0, 120)}...
                 </div>
+                {/* Show first answer if exists */}
+                {answersMap[question._id] && answersMap[question._id].length > 0 ? (
+                  <div className="mt-3 p-3 bg-surface border border-border rounded-lg">
+                    <div className="text-sm text-text-primary font-medium mb-1">
+                      <span className="text-green-600 font-bold mr-2">Answer:</span>
+                      {answersMap[question._id][0].content.length > 120
+                        ? answersMap[question._id][0].content.substring(0, 120) + '...'
+                        : answersMap[question._id][0].content}
+                    </div>
+                    <div className="text-xs text-text-muted flex items-center gap-2 mt-1">
+                      <User size={12} className="mr-1" />
+                      {answersMap[question._id][0].author?.username || 'User'}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-3 text-xs text-text-muted italic">No answers yet.</div>
+                )}
                 <div className="flex items-center gap-2 mt-2">
                   {question.tags.slice(0, 3).map((tag) => (
                     <span key={tag} className="badge badge-primary">
@@ -183,7 +227,7 @@ const Home = () => {
               </div>
               <div className="flex flex-col items-center ml-4">
                 <span className="bg-primary text-white rounded-lg px-3 py-1 text-sm font-bold">
-                  {question.answers?.length || 0} ans
+                  {answersMap[question._id]?.length || 0} ans
                 </span>
               </div>
             </div>
