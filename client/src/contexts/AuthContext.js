@@ -29,7 +29,13 @@ export const AuthProvider = ({ children }) => {
   const checkAuth = async () => {
     try {
       const response = await axios.get('/api/auth/me');
-      setUser(response.data.user);
+      // Normalize user data structure
+      const userData = {
+        ...response.data.user,
+        id: response.data.user.id || response.data.user._id,
+        _id: response.data.user._id || response.data.user.id
+      };
+      setUser(userData);
     } catch (error) {
       localStorage.removeItem('token');
       delete axios.defaults.headers.common['Authorization'];
@@ -43,9 +49,16 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.post('/api/auth/login', { email, password });
       const { token, user } = response.data;
       
+      // Normalize user data structure
+      const userData = {
+        ...user,
+        id: user.id || user._id,
+        _id: user._id || user.id
+      };
+      
       localStorage.setItem('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      setUser(user);
+      setUser(userData);
       
       toast.success('Login successful!');
       return true;
@@ -65,9 +78,16 @@ export const AuthProvider = ({ children }) => {
       });
       const { token, user } = response.data;
       
+      // Normalize user data structure
+      const userData = {
+        ...user,
+        id: user.id || user._id,
+        _id: user._id || user.id
+      };
+      
       localStorage.setItem('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      setUser(user);
+      setUser(userData);
       
       toast.success('Registration successful!');
       return true;
@@ -88,7 +108,13 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (updates) => {
     try {
       const response = await axios.put('/api/auth/profile', updates);
-      setUser(response.data.user);
+      // Normalize user data structure
+      const userData = {
+        ...response.data.user,
+        id: response.data.user.id || response.data.user._id,
+        _id: response.data.user._id || response.data.user.id
+      };
+      setUser(userData);
       toast.success('Profile updated successfully');
       return true;
     } catch (error) {

@@ -6,6 +6,40 @@ import TagInput from '../components/TagInput';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
+// Popular tags for quick selection
+const POPULAR_TAGS = [
+  // Programming Languages
+  'javascript', 'python', 'java', 'c++', 'c#', 'php', 'ruby', 'go', 'rust', 'swift',
+  'typescript', 'kotlin', 'scala', 'r', 'dart', 'elixir', 'clojure', 'haskell',
+  
+  // Web Technologies
+  'react', 'vue', 'angular', 'nodejs', 'express', 'django', 'flask', 'spring',
+  'laravel', 'asp.net', 'jquery', 'bootstrap', 'tailwind', 'sass', 'less',
+  
+  // Databases
+  'mysql', 'postgresql', 'mongodb', 'redis', 'sqlite', 'oracle', 'sql-server',
+  'firebase', 'dynamodb', 'cassandra', 'neo4j',
+  
+  // Cloud & DevOps
+  'aws', 'azure', 'gcp', 'docker', 'kubernetes', 'jenkins', 'git', 'github',
+  'gitlab', 'terraform', 'ansible', 'nginx', 'apache',
+  
+  // Mobile Development
+  'react-native', 'flutter', 'ios', 'android', 'xamarin', 'ionic',
+  
+  // Data Science & AI
+  'machine-learning', 'deep-learning', 'tensorflow', 'pytorch', 'scikit-learn',
+  'pandas', 'numpy', 'matplotlib', 'seaborn', 'jupyter',
+  
+  // Other Technologies
+  'graphql', 'rest-api', 'websocket', 'microservices', 'serverless',
+  'blockchain', 'ethereum', 'bitcoin', 'solidity',
+  
+  // General Programming
+  'algorithms', 'data-structures', 'design-patterns', 'testing', 'tdd',
+  'clean-code', 'refactoring', 'debugging', 'performance', 'security'
+];
+
 const AskQuestion = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -59,11 +93,24 @@ const AskQuestion = () => {
     }));
   };
 
+  const addPopularTag = (tag) => {
+    if (!formData.tags.includes(tag) && formData.tags.length < 5) {
+      setFormData(prev => ({
+        ...prev,
+        tags: [...prev.tags, tag]
+      }));
+    }
+  };
+
+  const getAvailablePopularTags = () => {
+    return POPULAR_TAGS.filter(tag => !formData.tags.includes(tag));
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Ask a Question</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-3xl font-bold text-text-primary">Ask a Question</h1>
+        <p className="text-text-secondary mt-2">
           Share your knowledge and help others learn
         </p>
       </div>
@@ -83,7 +130,7 @@ const AskQuestion = () => {
             placeholder="What's your question? Be specific."
             maxLength={200}
           />
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-text-muted mt-1">
             {formData.title.length}/200 characters
           </p>
         </div>
@@ -110,9 +157,36 @@ const AskQuestion = () => {
             onChange={(tags) => handleInputChange('tags', tags)}
             placeholder="Add tags (e.g., react, javascript, nodejs)"
           />
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-text-muted mt-1">
             Add up to 5 tags to help others find your question
           </p>
+          
+          {/* Popular Tags */}
+          {getAvailablePopularTags().length > 0 && (
+            <div className="mt-4">
+              <p className="text-sm font-medium text-text-secondary mb-2">
+                Popular tags:
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {getAvailablePopularTags().slice(0, 20).map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => addPopularTag(tag)}
+                    className="px-3 py-1 text-sm bg-bg-secondary hover:bg-bg-tertiary text-text-secondary hover:text-text-primary rounded-full border border-border transition-colors duration-200"
+                    disabled={formData.tags.length >= 5}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+              {getAvailablePopularTags().length > 20 && (
+                <p className="text-xs text-text-muted mt-2">
+                  Type to search for more tags...
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Submit Button */}
@@ -144,7 +218,7 @@ const AskQuestion = () => {
       {/* Guidelines */}
       <div className="card mt-8">
         <h3 className="card-title">Writing a good question</h3>
-        <ul className="space-y-2 text-sm text-gray-600">
+        <ul className="space-y-2 text-sm text-text-secondary">
           <li>• Be specific and provide enough context</li>
           <li>• Include code examples if relevant</li>
           <li>• Explain what you've tried and what didn't work</li>

@@ -42,10 +42,13 @@ router.post('/register', async (req, res) => {
       token,
       user: {
         id: user._id,
+        _id: user._id,
         username: user.username,
         email: user.email,
         role: user.role,
-        reputation: user.reputation
+        reputation: user.reputation,
+        avatar: user.avatar,
+        createdAt: user.createdAt
       }
     });
   } catch (error) {
@@ -82,10 +85,13 @@ router.post('/login', async (req, res) => {
       token,
       user: {
         id: user._id,
+        _id: user._id,
         username: user.username,
         email: user.email,
         role: user.role,
-        reputation: user.reputation
+        reputation: user.reputation,
+        avatar: user.avatar,
+        createdAt: user.createdAt
       }
     });
   } catch (error) {
@@ -99,11 +105,13 @@ router.get('/me', auth, async (req, res) => {
     res.json({
       user: {
         id: req.user._id,
+        _id: req.user._id,
         username: req.user.username,
         email: req.user.email,
         role: req.user.role,
         reputation: req.user.reputation,
-        avatar: req.user.avatar
+        avatar: req.user.avatar,
+        createdAt: req.user.createdAt
       }
     });
   } catch (error) {
@@ -131,11 +139,13 @@ router.put('/profile', auth, async (req, res) => {
       message: 'Profile updated successfully',
       user: {
         id: user._id,
+        _id: user._id,
         username: user.username,
         email: user.email,
         role: user.role,
         reputation: user.reputation,
-        avatar: user.avatar
+        avatar: user.avatar,
+        createdAt: user.createdAt
       }
     });
   } catch (error) {

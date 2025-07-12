@@ -91,10 +91,10 @@ const Home = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-text-primary">
             {search ? `Search results for "${search}"` : 'All Questions'}
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-text-secondary mt-2">
             {pagination.total ? `${pagination.total} questions` : 'No questions found'}
           </p>
         </div>
@@ -122,8 +122,8 @@ const Home = () => {
                   onClick={() => handleSortChange(option.value)}
                   className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
                     sortBy === option.value
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'hover:bg-gray-100'
+                      ? 'bg-primary-light text-primary-dark'
+                      : 'hover:bg-background-secondary text-text-secondary hover:text-text-primary'
                   }`}
                 >
                   {option.label}
@@ -141,7 +141,7 @@ const Home = () => {
                   onClick={() => handleTagClick(tag._id)}
                   className={`badge ${
                     selectedTag === tag._id ? 'badge-primary' : ''
-                  } cursor-pointer`}
+                  } cursor-pointer hover:scale-105 transition-transform`}
                 >
                   {tag._id} ({tag.count})
                 </button>
@@ -154,10 +154,10 @@ const Home = () => {
         <div className="lg:col-span-3">
           {questions.length === 0 ? (
             <div className="card text-center py-12">
-              <h3 className="text-xl font-semibold text-gray-600 mb-2">
+              <h3 className="text-xl font-semibold text-text-secondary mb-2">
                 No questions found
               </h3>
-              <p className="text-gray-500 mb-4">
+              <p className="text-text-muted mb-4">
                 {search ? 'Try adjusting your search terms' : 'Be the first to ask a question!'}
               </p>
               {user && (
@@ -173,8 +173,8 @@ const Home = () => {
                   <div className="flex gap-4">
                     {/* Vote Stats */}
                     <div className="vote-container">
-                      <div className="vote-count">{question.voteCount}</div>
-                      <div className="text-xs text-gray-500">votes</div>
+                      <div className="vote-count">{question.voteCount || 0}</div>
+                      <div className="text-xs text-text-muted">votes</div>
                     </div>
 
                     {/* Question Content */}
@@ -183,17 +183,17 @@ const Home = () => {
                         <div className="flex-1">
                           <Link
                             to={`/question/${question._id}`}
-                            className="text-lg font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+                            className="text-lg font-semibold text-primary hover:text-primary-hover transition-colors"
                           >
                             {question.title}
                           </Link>
                           {question.isAnswered && (
-                            <CheckCircle className="inline-block ml-2 text-green-500" size={16} />
+                            <CheckCircle className="inline-block ml-2 text-success" size={16} />
                           )}
                         </div>
                       </div>
 
-                      <div className="mt-2 text-gray-600 line-clamp-2">
+                      <div className="mt-2 text-text-secondary line-clamp-2">
                         {question.description.replace(/<[^>]*>/g, '').substring(0, 200)}...
                       </div>
 
@@ -205,7 +205,7 @@ const Home = () => {
                             </span>
                           ))}
                           {question.tags.length > 3 && (
-                            <span className="text-gray-500 text-sm">
+                            <span className="text-text-muted text-sm">
                               +{question.tags.length - 3} more
                             </span>
                           )}
@@ -218,7 +218,7 @@ const Home = () => {
                           </div>
                           <div className="flex items-center gap-1">
                             <Eye size={14} />
-                            <span>{question.views} views</span>
+                            <span>{question.views || 0} views</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <Clock size={14} />
@@ -248,8 +248,8 @@ const Home = () => {
                 Previous
               </button>
               
-              <span className="px-4 py-2 text-gray-600">
-                Page {pagination.current} of {pagination.total}
+              <span className="text-text-secondary">
+                Page {page} of {pagination.total}
               </span>
               
               <button

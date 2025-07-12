@@ -77,7 +77,7 @@ const QuestionDetail = () => {
   };
 
   const handleAcceptAnswer = async (answerId) => {
-    if (!user || question.author._id !== user.id) {
+    if (!user || !question?.author?._id || question.author._id !== user._id) {
       toast.error('Only the question author can accept answers');
       return;
     }
@@ -141,7 +141,11 @@ const QuestionDetail = () => {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return 'Unknown date';
+    
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid date';
+    
     const now = new Date();
     const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
     
@@ -162,7 +166,7 @@ const QuestionDetail = () => {
   if (!question) {
     return (
       <div className="text-center py-8">
-        <h2 className="text-xl font-semibold text-gray-600">Question not found</h2>
+        <h2 className="text-xl font-semibold text-text-secondary">Question not found</h2>
       </div>
     );
   }
@@ -175,18 +179,18 @@ const QuestionDetail = () => {
           {/* Vote Container */}
           <div className="vote-container">
             <button
-              onClick={() => handleVote('upvote', question._id, 'question')}
+              onClick={() => handleVote('upvote', question?._id, 'question')}
               className={`vote-button ${
-                question.votes?.upvotes?.includes(user?._id) ? 'active' : ''
+                question?.votes?.upvotes?.includes(user?._id) ? 'active' : ''
               }`}
             >
               <ThumbsUp size={20} />
             </button>
-            <div className="vote-count">{question.voteCount}</div>
+            <div className="vote-count">{question?.voteCount || 0}</div>
             <button
-              onClick={() => handleVote('downvote', question._id, 'question')}
+              onClick={() => handleVote('downvote', question?._id, 'question')}
               className={`vote-button ${
-                question.votes?.downvotes?.includes(user?._id) ? 'active' : ''
+                question?.votes?.downvotes?.includes(user?._id) ? 'active' : ''
               }`}
             >
               <ThumbsDown size={20} />
@@ -196,9 +200,9 @@ const QuestionDetail = () => {
           {/* Question Content */}
           <div className="flex-1">
             <div className="flex items-start justify-between mb-4">
-              <h1 className="text-2xl font-bold text-gray-900">{question.title}</h1>
+              <h1 className="text-2xl font-bold text-text-primary">{question?.title || 'Untitled Question'}</h1>
               <div className="flex items-center gap-2">
-                {user && question.author._id === user.id && (
+                {user && question?.author?._id === user._id && (
                   <>
                     <button
                       onClick={() => navigate(`/question/${id}/edit`)}
@@ -218,13 +222,13 @@ const QuestionDetail = () => {
             </div>
 
             <div 
-              className="prose max-w-none mb-6"
-              dangerouslySetInnerHTML={{ __html: question.description }}
+              className="prose max-w-none mb-6 text-text-primary"
+              dangerouslySetInnerHTML={{ __html: question.description || '' }}
             />
 
             <div className="flex items-center justify-between">
               <div className="question-tags">
-                {question.tags.map((tag) => (
+                {question.tags && question.tags.map((tag) => (
                   <span key={tag} className="badge badge-primary mr-2">
                     {tag}
                   </span>
@@ -234,11 +238,11 @@ const QuestionDetail = () => {
               <div className="question-stats">
                 <div className="flex items-center gap-1">
                   <MessageSquare size={14} />
-                  <span>{answers.length} answers</span>
+                  <span>{answers?.length || 0} answers</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Eye size={14} />
-                  <span>{question.views} views</span>
+                  <span>{question.views || 0} views</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock size={14} />
@@ -246,7 +250,7 @@ const QuestionDetail = () => {
                 </div>
                 <div className="flex items-center gap-1">
                   <User size={14} />
-                  <span>{question.author?.username}</span>
+                  <span>{question.author?.username || 'Anonymous'}</span>
                 </div>
               </div>
             </div>
@@ -257,15 +261,15 @@ const QuestionDetail = () => {
       {/* Answers Section */}
       <div className="mt-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">
-            {answers.length} Answer{answers.length !== 1 ? 's' : ''}
+          <h2 className="text-xl font-semibold text-text-primary">
+            {answers?.length || 0} Answer{(answers?.length || 0) !== 1 ? 's' : ''}
           </h2>
           {user && (
             <button
               onClick={() => setShowAnswerForm(!showAnswerForm)}
               className="btn btn-primary"
             >
-              Post Answer
+              {showAnswerForm ? 'Cancel' : 'Write Answer'}
             </button>
           )}
         </div>
@@ -275,12 +279,14 @@ const QuestionDetail = () => {
           <div className="card mb-6">
             <h3 className="card-title">Your Answer</h3>
             <form onSubmit={handleSubmitAnswer}>
-              <RichTextEditor
-                value={answerContent}
-                onChange={setAnswerContent}
-                placeholder="Write your answer here..."
-              />
-              <div className="flex justify-end space-x-4 mt-4">
+              <div className="form-group">
+                <RichTextEditor
+                  value={answerContent}
+                  onChange={setAnswerContent}
+                  placeholder="Write your answer here..."
+                />
+              </div>
+              <div className="flex justify-end space-x-4">
                 <button
                   type="button"
                   onClick={() => setShowAnswerForm(false)}
@@ -308,30 +314,14 @@ const QuestionDetail = () => {
         )}
 
         {/* Answers List */}
-        {answers.length === 0 ? (
-          <div className="card text-center py-12">
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">
-              No answers yet
-            </h3>
-            <p className="text-gray-500 mb-4">
-              Be the first to answer this question!
-            </p>
-            {user && (
-              <button
-                onClick={() => setShowAnswerForm(true)}
-                className="btn btn-primary"
-              >
-                Post Answer
-              </button>
-            )}
+        {!answers || answers.length === 0 ? (
+          <div className="card text-center py-8">
+            <p className="text-text-muted">No answers yet. Be the first to answer!</p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {answers.map((answer) => (
-              <div
-                key={answer._id}
-                className={`answer ${answer.isAccepted ? 'accepted' : ''}`}
-              >
+              <div key={answer._id} className={`answer ${answer.isAccepted ? 'accepted' : ''}`}>
                 <div className="flex gap-4">
                   {/* Vote Container */}
                   <div className="vote-container">
@@ -343,7 +333,7 @@ const QuestionDetail = () => {
                     >
                       <ThumbsUp size={20} />
                     </button>
-                    <div className="vote-count">{answer.voteCount}</div>
+                    <div className="vote-count">{answer.voteCount || 0}</div>
                     <button
                       onClick={() => handleVote('downvote', answer._id, 'answer')}
                       className={`vote-button ${
@@ -357,37 +347,39 @@ const QuestionDetail = () => {
                   {/* Answer Content */}
                   <div className="flex-1">
                     <div className="answer-header">
-                      <div className="answer-author">
-                        <div className="answer-avatar">
-                          {answer.author?.avatar ? (
-                            <img
-                              src={answer.author.avatar}
-                              alt={answer.author.username}
-                              className="w-full h-full rounded-full"
-                            />
-                          ) : (
-                            answer.author?.username?.charAt(0).toUpperCase()
-                          )}
-                        </div>
-                        <div>
-                          <div className="font-medium">{answer.author?.username}</div>
-                          <div className="text-sm text-gray-500">
-                            {formatDate(answer.createdAt)}
+                                              <div className="answer-author">
+                          <div className="answer-avatar">
+                            {answer.author?.avatar ? (
+                              <img
+                                src={answer.author.avatar}
+                                alt={answer.author?.username || 'User'}
+                                className="w-full h-full rounded-full"
+                              />
+                            ) : (
+                              answer.author?.username?.charAt(0)?.toUpperCase() || 'U'
+                            )}
+                          </div>
+                          <div>
+                            <div className="font-medium text-text-primary">
+                              {answer.author?.username || 'Anonymous'}
+                            </div>
+                            <div className="text-sm text-text-muted">
+                              {formatDate(answer.createdAt)}
+                            </div>
                           </div>
                         </div>
-                      </div>
-
+                      
                       <div className="flex items-center gap-2">
                         {answer.isAccepted && (
-                          <div className="flex items-center gap-1 text-green-600">
+                          <div className="flex items-center gap-1 text-success">
                             <CheckCircle size={16} />
                             <span className="text-sm font-medium">Accepted</span>
                           </div>
                         )}
-                        {user && question.author._id === user.id && !answer.isAccepted && (
+                        {user && question?.author?._id === user._id && !answer.isAccepted && (
                           <button
                             onClick={() => handleAcceptAnswer(answer._id)}
-                            className="btn btn-outline btn-sm"
+                            className="btn btn-success btn-sm"
                           >
                             Accept
                           </button>
@@ -396,8 +388,8 @@ const QuestionDetail = () => {
                     </div>
 
                     <div 
-                      className="prose max-w-none"
-                      dangerouslySetInnerHTML={{ __html: answer.content }}
+                      className="prose max-w-none text-text-primary"
+                      dangerouslySetInnerHTML={{ __html: answer.content || '' }}
                     />
                   </div>
                 </div>

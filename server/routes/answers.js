@@ -6,7 +6,36 @@ const { auth } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Create answer
+// Get answers for a question
+router.get('/', async (req, res) => {
+  try {
+    const { questionId, author } = req.query;
+    let query = {};
+
+    if (questionId) {
+      query.question = questionId;
+    }
+
+    if (author) {
+      query.author = author;
+    }
+
+    const answers = await Answer.find(query)
+      .populate('author', 'username reputation avatar')
+      .populate({
+        path: 'votes.upvotes votes.downvotes',
+        select: 'username'
+      })
+      .sort({ isAccepted: -1, voteCount: -1, createdAt: 1 });
+
+    res.json({ answers });
+  } catch (error) {
+    console.error('Error fetching answers:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Create new answer
 router.post('/', auth, async (req, res) => {
   try {
     const { content, questionId } = req.body;
@@ -29,6 +58,9 @@ router.post('/', auth, async (req, res) => {
 
     await answer.save();
 
+    const populatedAnswer = await Answer.findById(answer._id)
+      .populate('author', 'username reputation avatar');
+
     // Create notification for question author
     if (question.author.toString() !== req.user._id.toString()) {
       const notification = new Notification({
@@ -36,7 +68,6 @@ router.post('/', auth, async (req, res) => {
         sender: req.user._id,
         type: 'answer',
         question: questionId,
-        answer: answer._id,
         content: `${req.user.username} answered your question "${question.title}"`
       });
       await notification.save();
@@ -44,21 +75,16 @@ router.post('/', auth, async (req, res) => {
       // Send real-time notification
       const io = req.app.get('io');
       io.to(question.author.toString()).emit('notification', {
-        type: 'answer',
-        message: `${req.user.username} answered your question`,
-        questionId,
-        answerId: answer._id
+        message: `${req.user.username} answered your question`
       });
     }
 
-    const populatedAnswer = await Answer.findById(answer._id)
-      .populate('author', 'username reputation avatar');
-
     res.status(201).json({
-      message: 'Answer posted successfully',
+      message: 'Answer created successfully',
       answer: populatedAnswer
     });
   } catch (error) {
+    console.error('Error creating answer:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
@@ -88,6 +114,7 @@ router.put('/:id', auth, async (req, res) => {
       answer: updatedAnswer
     });
   } catch (error) {
+    console.error('Error updating answer:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
@@ -105,20 +132,11 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
-    // If this was the accepted answer, unaccept it
-    if (answer.isAccepted) {
-      const question = await Question.findById(answer.question);
-      if (question) {
-        question.isAnswered = false;
-        question.acceptedAnswer = null;
-        await question.save();
-      }
-    }
-
     await Answer.findByIdAndDelete(req.params.id);
 
     res.json({ message: 'Answer deleted successfully' });
   } catch (error) {
+    console.error('Error deleting answer:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
@@ -168,6 +186,7 @@ router.post('/:id/vote', auth, async (req, res) => {
       voteCount: answer.voteCount
     });
   } catch (error) {
+    console.error('Error voting on answer:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
@@ -185,55 +204,47 @@ router.post('/:id/accept', auth, async (req, res) => {
       return res.status(404).json({ message: 'Question not found' });
     }
 
-    // Only question author can accept answers
     if (question.author.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Only question author can accept answers' });
+      return res.status(403).json({ message: 'Only the question author can accept answers' });
     }
 
-    // Unaccept previously accepted answer if exists
-    if (question.acceptedAnswer && question.acceptedAnswer.toString() !== answer._id.toString()) {
-      const previousAnswer = await Answer.findById(question.acceptedAnswer);
-      if (previousAnswer) {
-        previousAnswer.isAccepted = false;
-        await previousAnswer.save();
-      }
-    }
+    // Unaccept previously accepted answer
+    await Answer.updateMany(
+      { question: answer.question, isAccepted: true },
+      { isAccepted: false }
+    );
 
     // Accept this answer
     answer.isAccepted = true;
+    await answer.save();
+
+    // Update question
     question.isAnswered = true;
     question.acceptedAnswer = answer._id;
-
-    await answer.save();
     await question.save();
 
     // Create notification for answer author
-    if (answer.author.toString() !== req.user._id.toString()) {
-      const notification = new Notification({
-        recipient: answer.author,
-        sender: req.user._id,
-        type: 'accept',
-        question: question._id,
-        answer: answer._id,
-        content: `${req.user.username} accepted your answer to "${question.title}"`
-      });
-      await notification.save();
+    const notification = new Notification({
+      recipient: answer.author,
+      sender: req.user._id,
+      type: 'accept',
+      question: answer.question,
+      content: `${req.user.username} accepted your answer`
+    });
+    await notification.save();
 
-      // Send real-time notification
-      const io = req.app.get('io');
-      io.to(answer.author.toString()).emit('notification', {
-        type: 'accept',
-        message: `${req.user.username} accepted your answer`,
-        questionId: question._id,
-        answerId: answer._id
-      });
-    }
+    // Send real-time notification
+    const io = req.app.get('io');
+    io.to(answer.author.toString()).emit('notification', {
+      message: `${req.user.username} accepted your answer`
+    });
 
     res.json({
       message: 'Answer accepted successfully',
-      answer: await Answer.findById(answer._id).populate('author', 'username reputation avatar')
+      answer
     });
   } catch (error) {
+    console.error('Error accepting answer:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

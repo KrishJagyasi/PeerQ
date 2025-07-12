@@ -21,16 +21,23 @@ export const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      const newSocket = io('http://localhost:5000');
+      // Use environment variable or fallback to localhost
+      const socketUrl = process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000';
+      const newSocket = io(socketUrl);
       setSocket(newSocket);
 
       // Join user's room for notifications
-      newSocket.emit('join', user.id);
+      newSocket.emit('join', user.id || user._id);
 
       // Listen for notifications
       newSocket.on('notification', (data) => {
         toast.success(data.message);
         setUnreadCount(prev => prev + 1);
+      });
+
+      // Handle connection errors
+      newSocket.on('connect_error', (error) => {
+        console.error('Socket connection error:', error);
       });
 
       return () => {

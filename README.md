@@ -1,17 +1,6 @@
-# PeerQ - A Minimal Q&A Forum Platform (StackIt)
+# PeerQ - A Modern Q&A Forum Platform
 
-StackIt is a modern, feature-rich question-and-answer platform designed for collaborative learning and structured knowledge sharing. Built with React, Node.js, and MongoDB, it provides a clean, user-friendly interface for asking and answering questions within a community.
-
-## Team Information
-
-**Team Name:** VR Voyagers  
-**Team Members:**
-- [Krish Jagyasi](https://github.com/KrishJagyasi) (Team Leader)
-- [Krish Lakhani](https://github.com/Krisshhh)
-- [Ved Suthar](https://github.com/Ved210105)
-- [Darshil Padmani](https://github.com/DarshilPadmani)
-
-**Problem Statement:** PeerQ is a minimal question-and-answer platform that supports collaborative learning and structured knowledge sharing. It's designed to be simple, user-friendly, and focused on the core experience of asking and answering questions within a community.
+PeerQ is a modern, feature-rich question-and-answer platform designed for collaborative learning and structured knowledge sharing. Built with React, Node.js, and MongoDB, it provides a clean, user-friendly interface for asking and answering questions within a community.
 
 ## 🚀 Features
 
@@ -95,9 +84,19 @@ StackIt is a modern, feature-rich question-and-answer platform designed for coll
 3. **Environment Setup**
    Create a `.env` file in the root directory:
    ```env
-   MONGODB_URI=mongodb+srv://ved-21:ved-21@cluster0.tgavbcl.mongodb.net/stackit
-   JWT_SECRET=your-secret-key-here
+   # Database Configuration
+   MONGODB_URI=mongodb+srv://your-username:your-password@your-cluster.mongodb.net/stackit
+   
+   # JWT Configuration
+   JWT_SECRET=your-super-secret-jwt-key-here
+   
+   # Server Configuration
    PORT=5000
+   NODE_ENV=development
+   
+   # Client Configuration (for React app)
+   REACT_APP_API_URL=http://localhost:5000
+   REACT_APP_SOCKET_URL=http://localhost:5000
    ```
 
 4. **Start the development servers**
@@ -116,6 +115,7 @@ StackIt is a modern, feature-rich question-and-answer platform designed for coll
 5. **Access the application**
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:5000
+   - Health Check: http://localhost:5000/health
 
 ## 🗄️ Database Schema
 
@@ -167,6 +167,7 @@ StackIt is a modern, feature-rich question-and-answer platform designed for coll
 - `GET /api/questions/tags/popular` - Get popular tags
 
 ### Answers
+- `GET /api/answers` - Get answers with filtering
 - `POST /api/answers` - Create answer
 - `PUT /api/answers/:id` - Update answer
 - `DELETE /api/answers/:id` - Delete answer
@@ -211,6 +212,32 @@ StackIt is a modern, feature-rich question-and-answer platform designed for coll
 - CORS configuration
 - File upload restrictions
 
+## 🐛 Recent Bug Fixes
+
+### Frontend Fixes
+- ✅ Fixed user ID inconsistency between `id` and `_id`
+- ✅ Replaced `alert()` with proper toast notifications
+- ✅ Added proper error handling in components
+- ✅ Fixed socket connection with environment variables
+- ✅ Improved form validation and user feedback
+- ✅ Added loading states and disabled states
+- ✅ Fixed CSS inconsistencies and missing styles
+
+### Backend Fixes
+- ✅ Consistent API response structure
+- ✅ Improved error handling and logging
+- ✅ Added proper CORS configuration
+- ✅ Enhanced MongoDB connection handling
+- ✅ Added health check endpoint
+- ✅ Better validation and sanitization
+
+### General Improvements
+- ✅ Updated environment configuration
+- ✅ Enhanced documentation
+- ✅ Improved code consistency
+- ✅ Better error messages
+- ✅ Added proper TypeScript-like structure
+
 ## 🚀 Deployment
 
 ### Backend Deployment
@@ -240,4 +267,4 @@ For support and questions, please open an issue in the repository.
 
 ---
 
-**StackIt** - Empowering communities through collaborative learning and knowledge sharing.
+**PeerQ** - Empowering communities through collaborative learning and knowledge sharing.

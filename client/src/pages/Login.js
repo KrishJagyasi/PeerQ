@@ -32,9 +32,9 @@ const Login = () => {
   return (
     <div className="max-w-md mx-auto">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Welcome back</h1>
-        <p className="text-gray-600 mt-2">
-          Sign in to your StackIt account
+        <h1 className="text-3xl font-bold text-text-primary">Welcome back</h1>
+        <p className="text-text-secondary mt-2">
+          Sign in to your PeerQ account
         </p>
       </div>
 
@@ -89,9 +89,9 @@ const Login = () => {
         </form>
 
         <div className="mt-6 text-center">
-          <p className="text-gray-600">
+          <p className="text-text-secondary">
             Don't have an account?{' '}
-            <Link to="/register" className="text-blue-600 hover:text-blue-800">
+            <Link to="/register" className="text-primary hover:text-primary-hover">
               Sign up
             </Link>
           </p>
