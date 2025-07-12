@@ -64,11 +64,12 @@ router.post('/', requirePermission('post'), async (req, res) => {
     // Create notification for question author
     if (question.author.toString() !== req.user._id.toString()) {
       const notification = new Notification({
-        recipient: question.author,
-        sender: req.user._id,
-        type: 'answer',
-        question: questionId,
-        content: `${req.user.username} answered your question "${question.title}"`
+        userId: question.author,        // Target user
+        createdBy: req.user._id,       // Who created the notification
+        type: 'answer',                // Notification type
+        question: questionId,          // Related question
+        title: 'New Answer',           // Required title
+        message: `${req.user.username} answered your question "${question.title}"`  // Required message
       });
       await notification.save();
 
@@ -228,11 +229,12 @@ router.post('/:id/accept', auth, async (req, res) => {
 
     // Create notification for answer author
     const notification = new Notification({
-      recipient: answer.author,
-      sender: req.user._id,
+      userId: answer.author,
+      createdBy: req.user._id,
       type: 'accept',
       question: answer.question,
-      content: `${req.user.username} accepted your answer`
+      title: 'Answer Accepted',
+      message: `${req.user.username} accepted your answer`
     });
     await notification.save();
 

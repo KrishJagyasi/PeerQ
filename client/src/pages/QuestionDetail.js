@@ -63,7 +63,7 @@ const QuestionDetail = () => {
         setQuestion(prev => ({ ...prev, voteCount: response.data.voteCount }));
       } else {
         setAnswers(prev => 
-          prev.map(answer => 
+          (prev || []).map(answer => 
             answer._id === itemId 
               ? { ...answer, voteCount: response.data.voteCount }
               : answer
@@ -85,7 +85,7 @@ const QuestionDetail = () => {
     try {
       const response = await axios.post(`/api/answers/${answerId}/accept`);
       setAnswers(prev => 
-        prev.map(answer => ({
+        (prev || []).map(answer => ({
           ...answer,
           isAccepted: answer._id === answerId
         }))
@@ -113,7 +113,7 @@ const QuestionDetail = () => {
         questionId: id
       });
       
-      setAnswers(prev => [response.data.answer, ...prev]);
+      setAnswers(prev => [response.data.answer, ...(prev || [])]);
       setAnswerContent('');
       setShowAnswerForm(false);
       toast.success('Answer posted successfully!');

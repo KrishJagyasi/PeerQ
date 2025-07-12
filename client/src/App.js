@@ -5,12 +5,15 @@ import { AuthProvider } from './contexts/AuthContext';
 import { SocketProvider } from './contexts/SocketContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import Navbar from './components/Navbar';
+import Chatbot from './components/Chatbot';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AskQuestion from './pages/AskQuestion';
 import QuestionDetail from './pages/QuestionDetail';
 import Profile from './pages/Profile';
+import Admin from './pages/Admin';
+import Notifications from './pages/Notifications';
 import './App.css';
 
 function App() {
@@ -29,6 +32,8 @@ function App() {
                   <Route path="/ask" element={<AskQuestion />} />
                   <Route path="/question/:id" element={<QuestionDetail />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/admin" element={<Admin />} />
+                  <Route path="/notifications" element={<Notifications />} />
                 </Routes>
               </main>
               <Toaster 
@@ -42,6 +47,7 @@ function App() {
                   },
                 }}
               />
+              <Chatbot />
             </div>
           </Router>
         </SocketProvider>

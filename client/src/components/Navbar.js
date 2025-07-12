@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
 import { Bell, Search, User, LogOut, Settings, Crown, UserCheck, LogIn, UserPlus } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
+import NotificationList from './NotificationList';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -14,7 +15,6 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [notifications, setNotifications] = useState([]);
 
 
 
@@ -36,34 +36,7 @@ const Navbar = () => {
     handleLogout();
   };
 
-  const fetchNotifications = async () => {
-    try {
-      const response = await axios.get('/api/notifications');
-      setNotifications(response.data.notifications);
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
-      toast.error('Failed to load notifications');
-    }
-  };
-
-  const markAsRead = async (notificationId) => {
-    try {
-      await axios.put(`/api/notifications/${notificationId}/read`);
-      setNotifications(prev => 
-        prev.map(n => n._id === notificationId ? { ...n, isRead: true } : n)
-      );
-      // Update unread count
-      setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch (error) {
-      console.error('Failed to mark notification as read:', error);
-      toast.error('Failed to mark notification as read');
-    }
-  };
-
   const handleNotificationClick = () => {
-    if (!showNotifications) {
-      fetchNotifications();
-    }
     setShowNotifications(!showNotifications);
   };
 
@@ -81,227 +54,187 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-sm border-b border-surface-border sticky top-0 z-40">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">P</span>
-            </div>
-            <span className="text-xl font-bold text-primary">PeerQ</span>
-          </Link>
+    <nav className="navbar">
+      {/* Logo */}
+      <Link to="/" className="navbar-logo">
+        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <span className="text-white font-bold text-lg">P</span>
+        </div>
+        <span className="text-xl font-bold text-primary">PeerQ</span>
+      </Link>
 
-          {/* Search */}
-          <form onSubmit={handleSearch} className="flex-1 max-w-md mx-8">
+      {/* Search */}
+      <form onSubmit={handleSearch} className="navbar-search">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search questions..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-surface text-text-primary placeholder-text-muted"
+          />
+          <Search className="absolute left-3 top-2.5 h-5 w-5 text-text-muted" />
+        </div>
+      </form>
+
+      {/* Navigation Items */}
+      <div className="navbar-actions">
+        {/* Theme Toggle */}
+        <ThemeToggle size="sm" className="mr-2" />
+
+        {isAuthenticated() ? (
+          <>
+            {/* Ask Question Button - Only for users who can post */}
+            {canPost() && (
+              <Link
+                to="/ask"
+                className="btn btn-primary"
+              >
+                Ask Question
+              </Link>
+            )}
+
+            {/* Guest Upgrade Button */}
+            {isGuest() && (
+              <Link
+                to="/login"
+                className="btn btn-secondary"
+              >
+                Upgrade Account
+              </Link>
+            )}
+
+            {/* Quick Sign Out Button - Visible on larger screens */}
+            <button
+              onClick={handleSignOut}
+              className="hidden md:flex items-center space-x-2 px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+              title="Sign Out"
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Sign Out</span>
+            </button>
+
+            {/* Notifications */}
             <div className="relative">
-              <input
-                type="text"
-                placeholder="Search questions..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-surface text-text-primary placeholder-text-muted"
-              />
-              <Search className="absolute left-3 top-2.5 h-5 w-5 text-text-muted" />
+              <button
+                onClick={handleNotificationClick}
+                className="relative p-2 text-text-secondary hover:text-text-primary hover:bg-background-secondary rounded-lg transition-colors"
+              >
+                <Bell className="h-6 w-6" />
+                {unreadCount > 0 && (
+                  <span className="notification-badge">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Notifications Dropdown */}
+              {showNotifications && (
+                <div className="navbar-dropdown" style={{right: 0}}>
+                  <NotificationList 
+                    showUnreadOnly={false}
+                    className=""
+                    maxHeight="max-h-96"
+                  />
+                </div>
+              )}
             </div>
-          </form>
 
-          {/* Navigation Items */}
-          <div className="flex items-center space-x-4">
-            {/* Theme Toggle */}
-            <ThemeToggle size="sm" className="mr-2" />
-
-            {isAuthenticated() ? (
-              <>
-                {/* Ask Question Button - Only for users who can post */}
-                {canPost() && (
-                  <Link
-                    to="/ask"
-                    className="btn btn-primary"
-                  >
-                    Ask Question
-                  </Link>
-                )}
-
-                {/* Guest Upgrade Button */}
-                {isGuest() && (
-                  <Link
-                    to="/login"
-                    className="btn btn-secondary"
-                  >
-                    Upgrade Account
-                  </Link>
-                )}
-
-                {/* Quick Sign Out Button - Visible on larger screens */}
-                <button
-                  onClick={handleSignOut}
-                  className="hidden md:flex items-center space-x-2 px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
-                  title="Sign Out"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span>Sign Out</span>
-                </button>
-
-                {/* Notifications */}
-                <div className="relative">
-                  <button
-                    onClick={handleNotificationClick}
-                    className="relative p-2 text-text-secondary hover:text-text-primary hover:bg-background-secondary rounded-lg transition-colors"
-                  >
-                    <Bell className="h-6 w-6" />
-                    {unreadCount > 0 && (
-                      <span className="notification-badge">
-                        {unreadCount > 99 ? '99+' : unreadCount}
-                      </span>
-                    )}
-                  </button>
-
-                  {/* Notifications Dropdown */}
-                  {showNotifications && (
-                    <div className="absolute right-0 mt-2 w-80 bg-surface rounded-lg shadow-lg border border-surface-border z-50">
-                      <div className="p-4 border-b border-surface-border">
-                        <h3 className="text-lg font-semibold text-text-primary">Notifications</h3>
-                      </div>
-                      <div className="max-h-96 overflow-y-auto">
-                        {notifications.length > 0 ? (
-                          notifications.map((notification) => (
-                            <div
-                              key={notification._id}
-                              className={`p-4 border-b border-surface-border hover:bg-background-secondary cursor-pointer transition-colors ${
-                                !notification.isRead ? 'bg-primary-light' : ''
-                              }`}
-                              onClick={() => markAsRead(notification._id)}
-                            >
-                              <p className="text-sm text-text-primary">{notification.content}</p>
-                              <p className="text-xs text-text-muted mt-1">
-                                {new Date(notification.createdAt).toLocaleDateString()}
-                              </p>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="p-4 text-center text-text-muted">
-                            No notifications
-                          </div>
-                        )}
-                      </div>
-                    </div>
+            {/* User Menu */}
+            <div className="relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center space-x-2 p-2 text-text-secondary hover:text-text-primary hover:bg-background-secondary rounded-lg transition-colors"
+              >
+                <div className="w-8 h-8 bg-background-secondary rounded-full flex items-center justify-center">
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.username}
+                      className="w-8 h-8 rounded-full"
+                    />
+                  ) : (
+                    <span className="text-sm font-semibold text-text-primary">
+                      {user?.username?.charAt(0).toUpperCase()}
+                    </span>
                   )}
                 </div>
+                {user?.role && (
+                  <div className="hidden sm:block">
+                    {getRoleBadge(user.role)}
+                  </div>
+                )}
+              </button>
 
-                {/* User Menu */}
-                <div className="relative">
-                  <button
-                    onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center space-x-2 p-2 text-text-secondary hover:text-text-primary hover:bg-background-secondary rounded-lg transition-colors"
-                  >
-                    <div className="w-8 h-8 bg-background-secondary rounded-full flex items-center justify-center">
-                      {user?.avatar ? (
-                        <img
-                          src={user.avatar}
-                          alt={user.username}
-                          className="w-8 h-8 rounded-full"
-                        />
-                      ) : (
-                        <span className="text-sm font-semibold text-text-primary">
-                          {user?.username?.charAt(0).toUpperCase()}
-                        </span>
-                      )}
-                    </div>
+              {/* User Dropdown */}
+              {showUserMenu && (
+                <div className="navbar-dropdown" style={{right: 0}}>
+                  <div className="dropdown-header">
+                    <div className="text-sm font-medium text-text-primary">{user?.username}</div>
+                    <div className="text-xs text-text-muted">{user?.email}</div>
                     {user?.role && (
-                      <div className="hidden sm:block">
+                      <div className="mt-1">
                         {getRoleBadge(user.role)}
                       </div>
                     )}
-                  </button>
-
-                  {/* User Dropdown */}
-                  {showUserMenu && (
-                    <div className="absolute right-0 mt-2 w-48 bg-surface rounded-lg shadow-lg border border-surface-border z-50">
-                      <div className="py-1">
-                        <div className="px-4 py-2 border-b border-surface-border">
-                          <div className="text-sm font-medium text-text-primary">{user?.username}</div>
-                          <div className="text-xs text-text-muted">{user?.email}</div>
-                          {user?.role && (
-                            <div className="mt-1">
-                              {getRoleBadge(user.role)}
-                            </div>
-                          )}
-                        </div>
-                        <Link
-                          to="/profile"
-                          className="flex items-center px-4 py-2 text-sm text-text-primary hover:bg-background-secondary transition-colors"
-                          onClick={() => setShowUserMenu(false)}
-                        >
-                          <User className="h-4 w-4 mr-2" />
-                          Profile
-                        </Link>
-                        {isAdmin() && (
-                          <Link
-                            to="/admin"
-                            className="flex items-center px-4 py-2 text-sm text-text-primary hover:bg-background-secondary transition-colors"
-                            onClick={() => setShowUserMenu(false)}
-                          >
-                            <Settings className="h-4 w-4 mr-2" />
-                            Admin Panel
-                          </Link>
-                        )}
-                        <button
-                          onClick={handleLogout}
-                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                        >
-                          <LogOut className="h-4 w-4 mr-2" />
-                          Logout
-                        </button>
-                      </div>
-                    </div>
+                  </div>
+                  <Link
+                    to="/profile"
+                    className="dropdown-item"
+                    onClick={() => setShowUserMenu(false)}
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    Profile
+                  </Link>
+                  <Link
+                    to="/notifications"
+                    className="dropdown-item"
+                    onClick={() => setShowUserMenu(false)}
+                  >
+                    <Bell className="h-4 w-4 mr-2" />
+                    Notifications
+                  </Link>
+                  {isAdmin() && (
+                    <Link
+                      to="/admin"
+                      className="dropdown-item"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Admin Panel
+                    </Link>
                   )}
+                  <button
+                    onClick={handleLogout}
+                    className="dropdown-item text-red-600"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </button>
                 </div>
-              </>
-            ) : (
-              <div className="flex items-center space-x-3">
-                {/* Login Button */}
-                <Link 
-                  to="/login" 
-                  className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-blue hover:text-blue hover:bg-primary-light rounded-lg transition-colors border border-blue-500"
-                >
-                  <LogIn className="h-4 w-4" />
-                  <span>Login</span>
-                </Link>
-                
-                {/* Signup Button */}
-                <Link 
-                  to="/register" 
-                  className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary rounded-lg transition-colors shadow-sm"
-                >
-                  <UserPlus className="h-4 w-4" />
-                  <span>Signup</span>
-                </Link>
-              </div>
-            )}
-
-            {/* Always show login/signup for guests */}
-            {isAuthenticated() && isGuest() && (
-              <div className="flex items-center space-x-3 ml-4">
-                <Link 
-                  to="/login" 
-                  className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-blue hover:text-blue hover:bg-primary-light rounded-lg transition-colors border border-blue-500"
-                >
-                  <LogIn className="h-4 w-4" />
-                  <span>Login</span>
-                </Link>
-                
-                <Link 
-                  to="/register" 
-                  className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-white bg-primary hover:bg-primary rounded-lg transition-colors shadow-sm"
-                >
-                  <UserPlus className="h-4 w-4" />
-                  <span>Signup</span>
-                </Link>
-              </div>
-            )}
+              )}
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center space-x-3">
+            {/* Login Button */}
+            <Link 
+              to="/login" 
+              className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-blue hover:text-blue hover:bg-primary-light rounded-lg transition-colors border border-blue-500"
+            >
+              <LogIn className="h-4 w-4" />
+              <span>Login</span>
+            </Link>
+            {/* Signup Button */}
+            <Link 
+              to="/register" 
+              className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary rounded-lg transition-colors shadow-sm"
+            >
+              <UserPlus className="h-4 w-4" />
+              <span>Signup</span>
+            </Link>
           </div>
-        </div>
+        )}
       </div>
     </nav>
   );
