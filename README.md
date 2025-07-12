@@ -1,9 +1,9 @@
 Team Name: VR Voyagers\
 Team Members: 
 - [Krish Jagyasi](https://github.com/KrishJagyasi) (Team Leader)
-- [Krish Lakhani](https://github.com/Ved210105)
-- [Ved Suthar](https://github.com/Krisshhh)
-- Darshil Padmani
+- [Krish Lakhani](https://github.com/Krisshhh)
+- [Ved Suthar](https://github.com/Ved210105)
+- [Darshil Padmani](https://github.com/Ved210105)
 
 Problem Statement: PeerQ is a minimal question-and-answer platform that supports collaborative
 learning and structured knowledge sharing. It’s designed to be simple, user- friendly,
