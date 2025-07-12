@@ -39,7 +39,7 @@ cd ..
 
 ### Step 3: Test Server
 ```bash
-node test-server.js
+node test-chatbot.js
 ```
 
 ### Step 4: Start Application

@@ -3,12 +3,12 @@ echo Checking Chatbot Status...
 echo.
 
 echo 1. Checking server status...
-curl -s http://localhost:5000/api/health > nul 2>&1
+node test-server-health.js
 if %errorlevel% equ 0 (
-    echo ✓ Server is running on http://localhost:5000
+    echo ✓ Server is healthy and running
 ) else (
-    echo ✗ Server is not running
-    echo   Start with: npm run server
+    echo ✗ Server health check failed
+    echo   Start with: cd server && npm start
 )
 
 echo.

@@ -22,10 +22,21 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo 3. Testing server imports...
-node test-server.js
+echo 3. Testing server health...
+node test-server-health.js
 if %errorlevel% neq 0 (
-    echo Server test failed
+    echo Server health check failed
+    echo Please start the server first: cd server && npm start
+    pause
+    exit /b 1
+)
+
+echo.
+echo 4. Testing chatbot API...
+node test-chatbot.js
+if %errorlevel% neq 0 (
+    echo Chatbot test failed
+    echo Please check your environment variables and API keys
     pause
     exit /b 1
 )
