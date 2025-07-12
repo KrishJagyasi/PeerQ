@@ -17,7 +17,7 @@ import {
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const RichTextEditor = ({ value, onChange, placeholder = 'WrWrite your content here...' }) => {
+const RichTextEditor = ({ value, onChange, placeholder = 'Write your content here...' }) => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showLinkDialog, setShowLinkDialog] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
@@ -26,7 +26,9 @@ const RichTextEditor = ({ value, onChange, placeholder = 'WrWrite your content h
   const [imageUrl, setImageUrl] = useState('');
   const [imageAlt, setImageAlt] = useState('');
   const [isUploading, setIsUploading] = useState(false);
-  const [mentionSuggestions] = useState([]);
+  const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState('');
+  const [mentionSuggestions, setMentionSuggestions] = useState([]);
   const editorRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -150,6 +152,26 @@ const RichTextEditor = ({ value, onChange, placeholder = 'WrWrite your content h
   const insertMention = (username) => {
     const mentionHtml = `<a href="/profile/${username}" class="mention">@${username}</a>`;
     execCommand('insertHTML', mentionHtml);
+<<<<<<< HEAD
+=======
+    setShowMentionSuggestions(false);
+    setMentionQuery('');
+  };
+
+  const handleMentionSearch = async (query) => {
+    if (query.startsWith('@') && query.length > 1) {
+      const searchTerm = query.slice(1);
+      try {
+        const response = await axios.get(`/api/users/search?q=${encodeURIComponent(searchTerm)}`);
+        setMentionSuggestions(response.data.users || []);
+        setShowMentionSuggestions(true);
+      } catch (error) {
+        console.error('Failed to fetch mention suggestions:', error);
+      }
+    } else {
+      setShowMentionSuggestions(false);
+    }
+>>>>>>> ea78d8c17855c0cc72f3d66d088db8dc00a71d99
   };
 
   const handleImageUpload = async (e) => {
@@ -344,7 +366,7 @@ const RichTextEditor = ({ value, onChange, placeholder = 'WrWrite your content h
           autoCapitalize="sentences"
           tabIndex={0}
           style={{ outline: 'none' }}
-          placeholder={placeholder}
+          placeholder={placeholder}  
           onInput={updateContent}
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
@@ -371,7 +393,7 @@ const RichTextEditor = ({ value, onChange, placeholder = 'WrWrite your content h
       />
 
       {/* Mention Suggestions */}
-      {mentionSuggestions.length > 0 && (
+      {showMentionSuggestions && mentionSuggestions.length > 0 && (
         <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 p-2 max-w-64 max-h-48 overflow-y-auto">
           <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Mention users:</div>
           {mentionSuggestions.map((user) => (
